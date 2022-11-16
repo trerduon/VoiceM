@@ -11,11 +11,11 @@ bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
 @bot.event
 async def on_ready():
-  await checkVoice()
+  await checkVoice(707853934441791499) #temporary
   print("Bot is alive")
 
-async def checkVoice():
-    guild = bot.get_guild(707853934441791499) #temporary
+async def checkVoice(guildId):
+    guild = bot.get_guild(guildId)
 
     with open("main_canals.json", "r") as myFile:
         channels_json = myFile.read()
@@ -92,7 +92,7 @@ async def on_voice_state_update(member, before, after):
             myFile.write(channels_json)
         return
     if before.channel is not None and after.channel is None:
-        await checkVoice()
+        await checkVoice(707853934441791499) #temporary
         return
 
 token = open('token.txt', 'r').readline()
