@@ -1,4 +1,5 @@
 import discord
+import json
 import configparser
 from discord.ext import commands
 
@@ -14,45 +15,37 @@ async def on_ready():
   print("Bot is alive")
 
 async def checkVoice():
-    info = open('serverInfo.txt')
-    lines = info.read().splitlines()
-    info.close()
-    if(len(lines) == 0):
-        print("serverInfo.txt is null")
-        return
-    guild = bot.get_guild(int(lines[0]))
-    category = discord.utils.get(guild.categories, id=int(lines[2]))
-    channels = category.channels
+    guild = bot.get_guild(691182902633037834) #temporary
 
-    info = open('channels.txt')
-    lines = info.read().splitlines()
-    info.close()
-    for channel in channels:
-        newInfo = ""
-        isTrue = False
-        for line in lines:
-            words = line.split(";")
-            if int(channel.id) == int(words[0]):
-                isTrue = True
-            else:
-                if newInfo != "":
-                    newInfo += "\n"
-                newInfo += line
-        if(str(len(channel.members)) != "0" or not isTrue): continue
-        if type(channel) != discord.channel.VoiceChannel or channel is None:
+    with open("main_canals.json", "r") as myFile:
+        channels_json = myFile.read()
+    if(len(channels_json) == 0):
+        print("main_canals.json is null")
+        return
+
+    channels = json.loads(channels_json)
+    updatedChannels = []
+
+    for channel in channels[0]:
+        checkedChannel = discord.utils.get(guild.channels, id=int(channel))
+        if(int(len(checkedChannel.members)) != 0):
+            updatedChannels.append(channel)
+            continue
+        if type(checkedChannel) != discord.channel.VoiceChannel or checkedChannel is None:
             print("No channel found!")
         else:
             await channel.delete()
 
-        file = open('channels.txt', 'w')
-        file.write(newInfo)
-        file.close()
+    channels_json = json.dumps(updatedChannels)
+    with open("main_canals.json", "w") as myFile:
+        myFile.write(channels_json)
+
 
 def main():
   return "Your bot is alive!"
 
 @bot.command()
-async def reg(ctx, channelId):
+async def reg(ctx, channelId):#need to edit
     if not ctx.message.author.guild_permissions.administrator:
         return
     info = ""
@@ -64,7 +57,7 @@ async def reg(ctx, channelId):
     file.close()
 
 @bot.command()
-async def info(ctx):
+async def info(ctx):#need to edit
     if not ctx.message.author.guild_permissions.administrator:
         return
     info = open('serverInfo.txt')
@@ -78,7 +71,7 @@ async def info(ctx):
 
 
 @bot.event
-async def on_voice_state_update(member, before, after):
+async def on_voice_state_update(member, before, after):#need to edit
     info = open('serverInfo.txt')
     lines = info.read().splitlines()
     info.close()
