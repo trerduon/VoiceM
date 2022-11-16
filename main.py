@@ -18,17 +18,35 @@ async def checkVoice():
     lines = info.read().splitlines()
     info.close()
     if(len(lines) == 0):
-        print("serverInfo.txt is null");
+        print("serverInfo.txt is null")
         return
     guild = bot.get_guild(int(lines[0]))
     category = discord.utils.get(guild.categories, id=int(lines[2]))
     channels = category.channels
+
+    info = open('channels.txt')
+    lines = info.read().splitlines()
+    info.close()
     for channel in channels:
-        if(str(len(channel.members)) != "0" or channel.id == int(lines[1])): continue
+        newInfo = ""
+        isTrue = False
+        for line in lines:
+            words = line.split(";")
+            if int(channel.id) == int(words[0]):
+                isTrue = True
+            else:
+                if newInfo != "":
+                    newInfo += "\n"
+                newInfo += line
+        if(str(len(channel.members)) != "0" or not isTrue): continue
         if type(channel) != discord.channel.VoiceChannel or channel is None:
             print("No channel found!")
         else:
             await channel.delete()
+
+        file = open('channels.txt', 'w')
+        file.write(newInfo)
+        file.close()
 
 def main():
   return "Your bot is alive!"
@@ -69,19 +87,44 @@ async def on_voice_state_update(member, before, after):
         cat = discord.utils.get(guild.categories, id=int(lines[2]))
         voiceChannel = await guild.create_voice_channel(f"{member} channel", category=cat)
         await member.move_to(voiceChannel)
+        channelsFile = open('channels.txt')
+        info = channelsFile.read()
+        if info != "":
+            info += "\n"
+        info += f"{voiceChannel.id};{member.id}"
+        channelsFile.close()
+        file = open('channels.txt', 'w')
+        file.write(info)
+        file.close()
         return
     if before.channel is not None and after.channel is None and before.channel.category.id == int(lines[2]) and before.channel.id != int(lines[1]):
+        isTrue = False
+        info = open('channels.txt')
+        newInfo = ""
+        lines = info.read().splitlines()
+        info.close()
+        for line in lines:
+            words = line.split(";")
+            if int(before.channel.id) == int(words[0]):
+                isTrue = True
+            else:
+                if newInfo != "":
+                    newInfo += "\n"
+                newInfo += line
+        if not isTrue:
+            return
         members = before.channel.members
-        count = 0;
-        for member in members:
-            count += 1
-        if count != 0:
+        if len(members) != 0:
             return
         channel = before.channel
         if type(channel) != discord.channel.VoiceChannel or channel is None:
             print("No channel found!")
             return
         await channel.delete()
+        file = open('channels.txt', 'w')
+        file.write(newInfo)
+        file.close()
+
 
 
 token = open('token.txt', 'r').readline()
