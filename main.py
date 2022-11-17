@@ -14,7 +14,7 @@ async def on_ready():
   await checkVoice(707853934441791499) #temporary
   print("Bot is alive")
 
-async def checkVoice(guildId):
+async def checkVoice(guildId): #проверка каналов
     guild = bot.get_guild(guildId)
 
     with open("main_canals.json", "r") as myFile:
@@ -23,8 +23,8 @@ async def checkVoice(guildId):
         print("main_canals.json is null")
         return
 
-    channels = json.loads(channels_json)
-    updatedChannels = []
+    channels = json.loads(channels_json) #созданные каналы
+    updatedChannels = [] #каналы не подлежащие удалению
 
     for channel in channels:
         checkedChannel = discord.utils.get(guild.channels, id=int(channel))
@@ -71,17 +71,17 @@ async def info(ctx):
 
 
 @bot.event
-async def on_voice_state_update(member, before, after):
+async def on_voice_state_update(member, before, after): #создание/удаление канала при заходе/выходе пользователя
     info = open('serverInfo.txt')
     lines = info.read().splitlines()
     info.close()
     guild = member.guild
     if not before.channel and after.channel:
-        cat = discord.utils.get(guild.categories, id=int(lines[2]))
-        voiceChannel = await guild.create_voice_channel(f"{member} channel", category=cat)
+        cat = discord.utils.get(guild.categories, id=int(lines[2])) #категория
+        voiceChannel = await guild.create_voice_channel(f"{member} channel", category=cat) #создание нового канала
         await member.move_to(voiceChannel)
 
-        channels = []
+        channels = [] #созданные каналы
         with open("main_canals.json", "r") as myFile:
             channels_json = myFile.read()
         if( len(channels_json) != 0):
